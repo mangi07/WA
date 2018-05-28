@@ -1,5 +1,5 @@
 /* Test Runner */
-/*
+
 var path = require('path'),
     fs = require('fs');
 
@@ -9,28 +9,14 @@ var data = fs.readFileSync("./../chunk_utils/source.json");
 data = JSON.parse(data);
 var chunker = chunkutils.Chunker();
 
+let chunk = data.chapters[0].frames[0].text;
+let verses = chunker._splitVerses(chunk, "<verse");
+let chunks = chunker._createChunks(1, verses);
 
+console.log(chunks);
+/*
 data = chunker.makeOneVersePerChunkIn(data);
 
 console.log(data);
 console.log("");
 */
-var lodash = require('lodash');
-
-var obj1 = {
-    name:"obj1",
-    arr:[1,2,3],
-    innerobj:{
-        "frames":["one", "two", "three"]
-    }
-};
-var obj2 = {
-    name:"obj1",
-    arr:[1,2],
-    innerobj:{
-        "frames":["one", "two", "three"]
-    }
-};
-
-var eq = lodash.isEqual(obj1, obj2);
-console.log(eq);

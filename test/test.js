@@ -1,5 +1,5 @@
 var assert = require('assert');
-var lodash = require('lodash');
+var _ = require('lodash');
 
 describe('ChunkUtils', function() {
 
@@ -52,10 +52,22 @@ describe('ChunkUtils', function() {
                 "text": "<verse number=\"2\" style=\"v\" />La terre \u00e9tait informe et vide: il y avait des t\u00e9n\u00e8bres \u00e0 la surface de l\' ab\u00eeme, et l\' esprit de Dieu se mouvait au- dessusdes eaux.\n"
             };
 
-            expected_data = data;
-            expected_data.chapters[0].frames = [expected_chunk1, expected_chunk2];
+            let chunk = data.chapters[0].frames[0].text;
+            let verses = chunker._splitVerses(chunk, "<verse");
+            let actual_array = chunker._createChunks(1, verses);
 
-            // TODO: modify _createChunks() to do this
+            let expected_array = [expected_chunk1, expected_chunk2];
+
+            arr1 = JSON.stringify(actual_array);
+            arr2 = JSON.stringify(expected_array);
+            assert.equal(arr1, arr2);
+
+        });
+    });
+
+    describe('@makeOneVersePerChunkIn()', function() {
+        it('should return correct JSON with one verse per chunk', function() {
+
             actual_data = {"chapters": [
                 {"frames": [
                     {"format": "usx",
@@ -73,17 +85,9 @@ describe('ChunkUtils', function() {
                 ]}
             ], "date_modified": "20180427"};
 
-            assert(lodash.isEqual(expected_data, actual_data));
-        });
-    });
+            let expected_data = chunker.makeOneVersePerChunkIn(data);
 
-    describe('@makeOneVersePerChunkIn()', function() {
-        it('should return correct JSON with one verse per chunk', function() {
-
-            data = chunker.makeOneVersePerChunkIn(data);
-
-
-            assert.equal(lodash.isEqual(data, expected_data));
+            assert.equal(_.isEqual(expected_data, actual_data));
 
         });
     });

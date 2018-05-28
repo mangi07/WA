@@ -1,5 +1,6 @@
 'use strict';
 const assert = require("assert");
+var _ = require("lodash");
 
 function Chunker() {
 
@@ -48,8 +49,8 @@ function Chunker() {
          */
         _splitVerses: function (/** @type {String} */ chunkstr, 
                 /** @type {String} */ tag) {
-            assert(typeof(chunkstr) === "string", "chunkstr must be of type string");
-            assert(typeof(tag) === "string", "tag must be of type string");
+            assert(typeof(chunkstr) === "string", "In Chunker._splitVerses: chunkstr must be of type string");
+            assert(typeof(tag) === "string", "In Chunker._splitVerses: tag must be of type string");
 
             var verses = [];
             var i, v;
@@ -65,7 +66,9 @@ function Chunker() {
         },
 
         /**
-         * Given a chapter, creates an array of objects, each representing a verse.
+         * Given a verse chunk of a chapter, creates an array of objects, 
+         * each representing a verse.
+         * 
          * For example, with chapter 1, the first verse format would be:
          *  {"format": "usx",
                 "id": "01-01",
@@ -78,20 +81,29 @@ function Chunker() {
          * @param {String[]} verses 
          */
         _createChunks: function(chapter, verses){
-            let expected_chunk1 = {"format": "usx",
-                "id": "01-01",
-                "img": "",
-                "lastvs": "1", 
-                "text": "<para style=\"p\">\n\n  <verse number=\"1\" style=\"v\" />Au commencement, Dieu cr\u00e9ales cieuxet la terre.\n\n  "
-            };
-            let expected_chunk2 = {"format": "usx",
-                "id": "01-02",
-                "img": "",
-                "lastvs": "2", 
-                "text": "<verse number=\"2\" style=\"v\" />La terre \u00e9tait informe et vide: il y avait des t\u00e9n\u00e8bres \u00e0 la surface de l\' ab\u00eeme, et l\' esprit de Dieu se mouvait au- dessusdes eaux.\n"
-            };
 
-            return [expected_chunk1, expected_chunk2];
+            var chunks = [];
+            var re = /verse number="(\d+)"/;
+            var vtext, vnum, id, lastvs, text, chunk;
+            chapter = _.padStart(""+chapter, 2, "0");
+
+            while (verses.length > 0) {
+                vtext = verses.pop();
+                vnum = vtext.match(re)[1]; // catch any errors here ??
+                lastvs = vnum;
+                vnum = _.padStart(vnum, 2, "0");
+                id = chapter + "-" + vnum;
+
+                chunk = {"format": "usx",
+                    "id": id,
+                    "img": "",
+                    "lastvs": lastvs, 
+                    "text": vtext
+                };
+                chunks.push(chunk);
+            }
+
+            return chunks;
         }
     }
 
