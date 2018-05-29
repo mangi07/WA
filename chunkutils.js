@@ -32,11 +32,17 @@ function Chunker() {
          */
         makeOneVersePerChunkIn: function (data) {
             // TODO: for each chapter, build new frames array
+            for (var ch = 0; ch < data.chapters.length; ++ch) {
+                var all_chunks = [];
+                for (var fr = 0; fr < data.chapters[ch].frames.length; ++fr) {
+                    var text = data.chapters[ch].frames[fr].text;
+                    var verses = this._splitVerses(text, "<verse");
+                    var some_chunks = this._createChunks(ch, verses);
+                    all_chunks = all_chunks.concat(some_chunks);
+                }
+                data.chapters[ch].frames = all_chunks;
+            }
 
-            // looking frame by frame at the original frames array
-            // and then replace the original frames array with the new one.
-            var versestring = data.chapters[0].frames[0].text; // TODO: extract into helper funct
-            data = this._splitVerses(versestring, "<verse");
             return data;
         },
 
