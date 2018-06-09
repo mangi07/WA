@@ -80,7 +80,7 @@ describe('ChunkUtils', function() {
                         "id": "01-03",
                         "img": "",
                         "lastvs": "6", 
-                        "text": "<verse number=\"3\" style=\"v\" />Verse 3 text.\n " + 
+                        "text": "<verse number=\"3\" style=\"v\" />Verse 3 text.\n" + 
                             "<verse number=\"4\" style=\"v\" />Verse 4 text.\n" + 
                             "<verse number=\"5\" style=\"v\" />Verse 5 text.\n" + 
                             "<verse number=\"6\" style=\"v\" />Verse 6 text.\n"
@@ -97,14 +97,14 @@ describe('ChunkUtils', function() {
                         "id": "02-02",
                         "img": "",
                         "lastvs": "3", 
-                        "text": "<verse number=\"2\" style=\"v\" />Verse 2 text.\n " + 
+                        "text": "<verse number=\"2\" style=\"v\" />Verse 2 text.\n" + 
                             "<verse number=\"3\" style=\"v\" />Verse 3 text.\n"
                     },
                     {"format": "usx",
                         "id": "02-04",
                         "img": "",
                         "lastvs": "7", 
-                        "text": "<verse number=\"4\" style=\"v\" />Verse 4 text.\n " + 
+                        "text": "<verse number=\"4\" style=\"v\" />Verse 4 text.\n" + 
                             "<verse number=\"5\" style=\"v\" />Verse 5 text.\n" +
                             "<verse number=\"6\" style=\"v\" />Verse 6 text.\n" +
                             "<verse number=\"7\" style=\"v\" />Verse 7 text.\n"
@@ -130,7 +130,7 @@ describe('ChunkUtils', function() {
                         "id": "01-03",
                         "img": "",
                         "lastvs": "3", 
-                        "text": "<verse number=\"3\" style=\"v\" />Verse 3 text.\n "
+                        "text": "<verse number=\"3\" style=\"v\" />Verse 3 text.\n"
                     },
                     {"format": "usx",
                         "id": "01-04",
@@ -156,7 +156,7 @@ describe('ChunkUtils', function() {
                         "id": "02-01",
                         "img": "",
                         "lastvs": "1", 
-                        "text": "<para style=\"p\">\n\n  <verse number=\"1\" style=\"v\" />Verse 1 text.\n\n "
+                        "text": "<para style=\"p\">\n\n  <verse number=\"1\" style=\"v\" />Verse 1 text.\n"
                     },
                     {"format": "usx",
                         "id": "02-02",
@@ -168,7 +168,7 @@ describe('ChunkUtils', function() {
                         "id": "02-03",
                         "img": "",
                         "lastvs": "3", 
-                        "text": "<verse number=\"3\" style=\"v\" />Verse 3 text.\n "
+                        "text": "<verse number=\"3\" style=\"v\" />Verse 3 text.\n"
                     },
                     {"format": "usx",
                         "id": "02-04",
@@ -197,12 +197,89 @@ describe('ChunkUtils', function() {
                 ]}
             ], "date_modified": "20180427"};
 
-            let actual_output = chunker.makeOneVersePerChunkIn(data);
-            // TODO: Write expected_output and actual_output to files and compare them.
+            let actual_output = chunker.makeOneVersePerChunkIn(input_data);
+            let actual_string = JSON.stringify(actual_output);
+            let expected_string = JSON.stringify(expected_output);
 
-            assert.equal(_.isEqual(expected_data, actual_data));
+            //console.log("***Actual Output:\n" + actual_string);
+            //console.log("***Expected Output:\n" + expected_string);
 
+            assert.equal(actual_string, expected_string, 
+                "Expected modified JSON to match format of variable 'expected_output'.");
         });
+    });
+
+    describe('@validateJSON()', function(){
+        let valid_data = {"chapters": [
+            {"frames": [
+                {"format": "usx",
+                    "id": "01-01",
+                    "img": "",
+                    "lastvs": "2", 
+                    "text": "<para style=\"p\">\n\n  <verse number=\"1\" style=\"v\" />Verse 1 text.\n\n <verse number=\"2\" style=\"v\" />Verse 2 text.\n"
+                },
+                {"format": "usx",
+                    "id": "01-03",
+                    "img": "",
+                    "lastvs": "6", 
+                    "text": "<verse number=\"3\" style=\"v\" />Verse 3 text.\n " + 
+                        "<verse number=\"4\" style=\"v\" />Verse 4 text.\n" + 
+                        "<verse number=\"5\" style=\"v\" />Verse 5 text.\n" + 
+                        "<verse number=\"6\" style=\"v\" />Verse 6 text.\n"
+                }
+            ]},
+            {"frames": [
+                {"format": "usx",
+                    "id": "02-01",
+                    "img": "",
+                    "lastvs": "1", 
+                    "text": "<para style=\"p\">\n\n  <verse number=\"1\" style=\"v\" />Verse 1 text.\n"
+                },
+                {"format": "usx",
+                    "id": "02-02",
+                    "img": "",
+                    "lastvs": "3", 
+                    "text": "<verse number=\"2\" style=\"v\" />Verse 2 text.\n " + 
+                        "<verse number=\"3\" style=\"v\" />Verse 3 text.\n"
+                },
+                {"format": "usx",
+                    "id": "02-04",
+                    "img": "",
+                    "lastvs": "7", 
+                    "text": "<verse number=\"4\" style=\"v\" />Verse 4 text.\n " + 
+                        "<verse number=\"5\" style=\"v\" />Verse 5 text.\n" +
+                        "<verse number=\"6\" style=\"v\" />Verse 6 text.\n" +
+                        "<verse number=\"7\" style=\"v\" />Verse 7 text.\n"
+                }
+            ]}
+        ], "date_modified": "20180427"};
+
+        // this needs more testing - only a small part of validation logic is currently tested
+        it('should return false because JSON is invalid', function(){
+            // deep copy valid_data to make invalid_data
+            let invalid_data = JSON.stringify(valid_data);
+            invalid_data = JSON.parse(invalid_data);
+            
+            // introduce invalid format, missing text
+            invalid_data.chapters[1].frames = [{
+                "format": "usx",
+                    "id": "02-01",
+                    "img": "",
+                    "lastvs": "1"
+                    // Intentionally missing verse text here in order to test validation.
+            }];
+            let response = chunker.validateJSON(invalid_data);
+            assert.equal(response, false, 
+                "Expected false return value for invalid JSON \n" +
+                "(chapter 2, verse 1 text missing from data).");
+        });
+
+        it('should return true because JSON is valid', function(){
+            console.log("***TEXT: " + valid_data.chapters[1].frames[0].text);
+            let response = chunker.validateJSON(valid_data);
+            assert.equal(response, true, "Expected true return value for valid JSON.");
+        })
+
     });
 
 });

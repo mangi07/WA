@@ -24,23 +24,22 @@ function Chunker() {
          *      },
          *      ...]
          *  },
-         *  ...
-         *  ]
-         * ], "date_modified": "20180427"}
+         *  ...], "date_modified": "20180427"}
          * 
          * @return {Array} JSON object with same structure.
          */
         makeOneVersePerChunkIn: function (data) {
             // TODO: for each chapter, build new frames array
-            for (var ch = 0; ch < data.chapters.length; ++ch) {
+            for (var chindex = 0; chindex < data.chapters.length; chindex++) {
                 var all_chunks = [];
-                for (var fr = 0; fr < data.chapters[ch].frames.length; ++fr) {
-                    var text = data.chapters[ch].frames[fr].text;
+                for (var fr = 0; fr < data.chapters[chindex].frames.length; ++fr) {
+                    var ch = chindex + 1;
+                    var text = data.chapters[chindex].frames[fr].text;
                     var verses = this._splitVerses(text, "<verse");
                     var some_chunks = this._createChunks(ch, verses);
                     all_chunks = all_chunks.concat(some_chunks);
                 }
-                data.chapters[ch].frames = all_chunks;
+                data.chapters[chindex].frames = all_chunks;
             }
 
             return data;
@@ -110,6 +109,44 @@ function Chunker() {
             }
 
             return chunks;
+        },
+
+        /**
+         * Validate JSON
+         * 
+         * @param {JSON data} data
+         * 
+         * @return true if JSON follows the format expected
+         * in this module, specifically in makeOneVersePerChunkIn(),
+         * else return false
+         * 
+         * TODO: test
+         */
+        validateJSON: function(data){
+            if (!data.chapters) return false;
+
+            if (!Array.isArray(data.chapters)) return false;
+
+            for (var i = 0; i < data.chapters.length; i++) {
+                var chapter = data.chapters[i];
+                if (!chapter.frames || 
+                    !Array.isArray(chapter.frames)) 
+                    return false;
+                
+                for (var j = 0; j < chapter.frames.length; j++) {
+                    var frame = chapter.frames[j];
+                    if (!frame.format || !(frame.format == "usx"))
+                        return false;
+                    if (!frame.id) return false;
+                    if ((frame.img == "") != !frame.img) return false;
+                    if (!frame.lastvs) return false;
+                    if (!frame.text) return false;
+                }
+            }
+            
+            if (!data.date_modified) return false;
+
+            return true;
         }
     }
 
